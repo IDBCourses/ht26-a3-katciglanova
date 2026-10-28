@@ -26,11 +26,6 @@ import { createShape } from "./shape.js";
 // ---------- Settings ----------
 // Settings variables should contain all of the "fixed" parts of your programs
 // For example: which notes you can play, how fast things move, the tempo.
-const note = "C4"; // the note played when the pointer goes down
-
-// ---------- State ----------
-// State variables are the parts of your program that change over time.
-// For example: where the pointer is, how fast it's moving, or whether a drone is on.
 const shapeC = createShape();
 const shapeD = createShape();
 const shapeE = createShape();
@@ -43,6 +38,9 @@ const shapeKey = createShape();
 const shapeVibrato = createShape();
 const shapeDistortion = createShape();
 
+// ---------- State ----------
+// State variables are the parts of your program that change over time.
+// For example: where the pointer is, how fast it's moving, or whether a drone is on.
 let lastX = 0;
 let lastY = 0;
 let lastTime = 0;
@@ -66,14 +64,11 @@ function use() {
 
 // ---------- Controls (Event Handlers) ----------
 // Runs every time the pointer goes down: a click, a tap or a pen touch.
-function pointerDown(event) {
+function playNote(note) {
   Tone.start(); // browsers only allow sound after the player has pressed something
   const now = Tone.now();
-  console.log("Pointer down at", event.clientX, event.clientY);
-  synth.triggerAttack(note, now);
+  synth.triggerAttackRelease(note, "1n", now);
 }
-
-let total = 0;
 
 function pointerMove(event) {
   let normX = event.clientX / window.innerWidth;
@@ -130,7 +125,13 @@ function setup() {
   makeShape(shapeDistortion, 60, 1, 150, 0.6, 0.7);
 
   // Put your event listener code here
-  shapeC.element.addEventListener("pointerdown", pointerDown);
+  shapeC.element.addEventListener("pointerdown", () => playNote("C4"));
+  shapeD.element.addEventListener("pointerdown", () => playNote("D4"));
+  shapeE.element.addEventListener("pointerdown", () => playNote("E4"));
+  shapeF.element.addEventListener("pointerdown", () => playNote("F4"));
+  shapeG.element.addEventListener("pointerdown", () => playNote("G4"));
+  shapeA.element.addEventListener("pointerdown", () => playNote("A4"));
+  shapeB.element.addEventListener("pointerdown", () => playNote("B4"));
   window.addEventListener("pointermove", pointerMove);
 }
 
