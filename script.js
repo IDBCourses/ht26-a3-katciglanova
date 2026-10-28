@@ -43,9 +43,14 @@ const shapeKey = createShape();
 const shapeVibrato = createShape();
 const shapeDistortion = createShape();
 
+let lastX = 0;
+let lastY = 0;
+let lastTime = 0;
+
+let speeds = [];
 // ---------- Sound ----------
 // Make the instruments and plug them into the speakers.
-const synth = new Tone.PolySynth(Tone.Synth).toDestination(); // can play several notes at once
+const synth = new Tone.PolySynth(Tone.Synth, { volume: 0 }).toDestination(); // can play several notes at once
 
 // ---------- Update ----------
 // Update the state. This is called every 100ms.
@@ -63,15 +68,42 @@ function use() {
 // Runs every time the pointer goes down: a click, a tap or a pen touch.
 function pointerDown(event) {
   Tone.start(); // browsers only allow sound after the player has pressed something
-
+  const now = Tone.now();
   console.log("Pointer down at", event.clientX, event.clientY);
-  synth.triggerAttackRelease(note, "8n"); // play the note for an eighth note
+  synth.triggerAttack(note, now);
 }
+
+let total = 0;
 
 function pointerMove(event) {
   let normX = event.clientX / window.innerWidth;
   let normY = event.clientY / window.innerHeight;
-  console.log(normX, normY);
+  let now = Date.now();
+  let distance = Math.hypot(normX - lastX, normY - lastY);
+  let seconds = (now - lastTime) / 1000;
+  if (seconds <= 0) return;
+  let speed = distance / seconds;
+  speeds.push(speed);
+
+  if (speeds.length > 10) {
+    speeds.shift();
+  }
+  let total = 0;
+  for (let i = 0; i < speeds.length; i++) {
+    total = total + speeds[i];
+  }
+  let average = total / speeds.length;
+  let maxSpeed = 5;
+  let normSpeed = average / maxSpeed;
+  let volume = normSpeed * 40 - 20;
+  if (normSpeed >= 1) {
+    synth.volume.rampTo(0, 0.1);
+  }
+  synth.volume.rampTo(volume, 0.1);
+  console.log(normSpeed * 40 - 40);
+  lastX = normX;
+  lastY = normY;
+  lastTime = now;
 }
 
 function makeShape(shape, size, roundedness, hue, posX, posY) {
