@@ -31,6 +31,17 @@ const note = "C4"; // the note played when the pointer goes down
 // ---------- State ----------
 // State variables are the parts of your program that change over time.
 // For example: where the pointer is, how fast it's moving, or whether a drone is on.
+const shapeC = createShape();
+const shapeD = createShape();
+const shapeE = createShape();
+const shapeF = createShape();
+const shapeG = createShape();
+const shapeA = createShape();
+const shapeB = createShape();
+
+const shapeKey = createShape();
+const shapeVibrato = createShape();
+const shapeDistortion = createShape();
 
 // ---------- Sound ----------
 // Make the instruments and plug them into the speakers.
@@ -57,6 +68,19 @@ function pointerDown(event) {
   synth.triggerAttackRelease(note, "8n"); // play the note for an eighth note
 }
 
+function pointerMove(event) {
+  let normX = event.clientX / window.innerWidth;
+  let normY = event.clientY / window.innerHeight;
+  console.log(normX, normY);
+}
+
+function makeShape(shape, size, roundedness, hue, posX, posY) {
+  shape.setSize(size);
+  shape.setRoundedness(roundedness);
+  shape.setColour(hue, 80, 50);
+  shape.setPosition(posX, posY);
+}
+
 // ---------- Setup ----------
 // Setup is run once, at the start of the program. It sets everything up for us!
 function setup() {
@@ -64,11 +88,21 @@ function setup() {
   use(); // start the use loop
 
   // Example: a shape near the middle of the window. Replace it with your own.
-  const example = createShape("example");
-  example.setPosition(0.5, 0.5);
+  makeShape(shapeC, 60, 0, 0, 0.2, 0.5);
+  makeShape(shapeD, 60, 0, 20, 0.3, 0.5);
+  makeShape(shapeE, 60, 0, 60, 0.4, 0.5);
+  makeShape(shapeF, 60, 0, 90, 0.5, 0.5);
+  makeShape(shapeG, 60, 0, 170, 0.6, 0.5);
+  makeShape(shapeA, 60, 0, 220, 0.7, 0.5);
+  makeShape(shapeB, 60, 0, 290, 0.8, 0.5);
+
+  makeShape(shapeKey, 60, 1, 320, 0.5, 0.6);
+  makeShape(shapeVibrato, 60, 1, 200, 0.4, 0.7);
+  makeShape(shapeDistortion, 60, 1, 150, 0.6, 0.7);
 
   // Put your event listener code here
   window.addEventListener("pointerdown", pointerDown);
+  window.addEventListener("pointermove", pointerMove);
 }
 
 setup(); // Always remember to call setup()!
