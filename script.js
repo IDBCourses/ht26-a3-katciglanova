@@ -94,13 +94,10 @@ function pointerMove(event) {
   }
   let average = total / speeds.length;
   let maxSpeed = 5;
-  let normSpeed = average / maxSpeed;
-  let volume = normSpeed * 40 - 20;
-  if (normSpeed >= 1) {
-    synth.volume.rampTo(0, 0.1);
-  }
-  synth.volume.rampTo(volume, 0.1);
-  console.log(normSpeed * 40 - 40);
+  let normSpeed = Math.min(1, Math.max(0, average / maxSpeed));
+  let volume = normSpeed * 20 - 20;
+  synth.volume.rampTo(volume, 0.05);
+  console.log(normSpeed * 20 - 20);
   lastX = normX;
   lastY = normY;
   lastTime = now;
@@ -133,7 +130,7 @@ function setup() {
   makeShape(shapeDistortion, 60, 1, 150, 0.6, 0.7);
 
   // Put your event listener code here
-  window.addEventListener("pointerdown", pointerDown);
+  shapeC.element.addEventListener("pointerdown", pointerDown);
   window.addEventListener("pointermove", pointerMove);
 }
 
