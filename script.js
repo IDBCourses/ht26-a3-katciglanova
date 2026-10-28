@@ -91,9 +91,8 @@ function pointerMove(event) {
   let maxSpeed = 5;
   let normSpeed = Math.min(1, Math.max(0, average / maxSpeed));
   let volume = normSpeed * 20 - 20;
-  synth.volume.rampTo(volume, 0.1);
+  synth.volume.rampTo(volume, 0.05);
   console.log(normSpeed * 20 - 20);
-  console.log(normSpeed * 40 - 40);
   lastX = normX;
   lastY = normY;
   lastTime = now;
