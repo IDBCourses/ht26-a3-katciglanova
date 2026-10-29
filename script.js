@@ -50,8 +50,21 @@ let currentOctave = 3;
 let speeds = [];
 // ---------- Sound ----------
 // Make the instruments and plug them into the speakers.
-const synth = new Tone.PolySynth(Tone.Synth, { volume: 0 }).toDestination(); // can play several notes at once
 
+const distortionEffect = new Tone.Distortion({
+  distortion: 0,
+  wet: 0,
+}).toDestination();
+
+const vibratoEffect = new Tone.Vibrato({
+  frequency: 0,
+  depth: 0,
+  wet: 0,
+}).connect(distortionEffect);
+
+const synth = new Tone.PolySynth(Tone.Synth, { volume: 0 }).connect(
+  vibratoEffect,
+); // can play several notes at once
 // ---------- Update ----------
 // Update the state. This is called every 100ms.
 function update() {
@@ -72,7 +85,6 @@ function octaveSetting() {
   if (currentOctave > 5) {
     currentOctave = 3;
   }
-  console.log(currentOctave);
 }
 
 function playNote(note) {
@@ -106,6 +118,25 @@ function pointerMove(event) {
   lastX = normX;
   lastY = normY;
   lastTime = now;
+}
+
+function distortionOn() {
+  distortionEffect.distortion = 0.2;
+  distortionEffect.wet.rampTo(1, 0.05);
+}
+
+function distortionOff() {
+  distortionEffect.wet.rampTo(0, 0.05);
+}
+
+function vibratoOn() {
+  vibratoEffect.frequency.value = 5;
+  vibratoEffect.depth.value = 0.3;
+  vibratoEffect.wet.rampTo(1, 0.05);
+}
+
+function vibratoOff() {
+  vibratoEffect.wet.rampTo(0, 0.05);
 }
 
 function makeShape(shape, size, roundedness, hue, posX, posY) {
@@ -160,6 +191,10 @@ function setup() {
   );
 
   window.addEventListener("pointermove", pointerMove);
+  shapeDistortion.element.addEventListener("pointerenter", distortionOn);
+  shapeDistortion.element.addEventListener("pointerleave", distortionOff);
+  shapeVibrato.element.addEventListener("pointerenter", vibratoOn);
+  shapeVibrato.element.addEventListener("pointerleave", vibratoOff);
 }
 
 setup(); // Always remember to call setup()!
