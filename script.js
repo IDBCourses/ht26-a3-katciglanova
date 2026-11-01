@@ -84,19 +84,19 @@ function update() {
 // Use the state to make sound and move shapes. This is called every 100ms.
 let activeShapes = {};
 const noteDuration = 1200;
-const originalSize = 60;
 
 function use() {
   const now = Date.now();
   for (let i in activeShapes) {
     let currentShape = activeShapes[i];
     let shape = currentShape.shape;
-    const timeDiff = now - currentShape.press;
+    const timeDiff = now - currentShape.pressTime;
 
     if (timeDiff < noteDuration) {
       calculatePosition(shape, currentShape, timeDiff);
     } else {
-      shape.setSize(originalSize);
+      shape.setSize(currentShape.size);
+      shape.setPosition(currentShape.posX, currentShape.posY);
       delete activeShapes[i];
     }
   }
@@ -109,9 +109,9 @@ function calculatePosition(shape, currentShape, timeDiff) {
   shape.setSize(currentSize);
 
   let sizeNorm = currentSize / window.innerWidth;
-  let originalNorm = originalSize / window.innerWidth;
+  let originalNorm = currentShape.size / window.innerWidth;
   let centerX = currentShape.posX + originalNorm / 2;
-  let centerY = 0.5 + originalNorm / 2;
+  let centerY = currentShape.posY + originalNorm / 2;
   let newX = centerX - sizeNorm / 2;
   let newY = centerY - sizeNorm / 2;
 
@@ -128,11 +128,17 @@ function octaveSetting() {
   }
 }
 
-function playNote(note, shape, posX, i) {
+function playNote(note, shape, size, posX, posY, i) {
   Tone.start(); // browsers only allow sound after the player has pressed something
   const now = Tone.now();
   synth.triggerAttackRelease(note, "1n", now);
-  activeShapes[i] = { shape: shape, press: Date.now(), posX: posX };
+  activeShapes[i] = {
+    shape: shape,
+    pressTime: Date.now(),
+    size: size,
+    posX: posX,
+    posY: posY,
+  };
 }
 
 function pointerMove(event) {
@@ -186,7 +192,6 @@ function setup() {
   update(); // start the update loop
   use(); // start the use loop
 
-  // Example: a shape near the middle of the window. Replace it with your own.
   makeShape(shapeC, 60, 0.1, 0, 0.2, 0.5);
   makeShape(shapeD, 60, 0.1, 20, 0.3, 0.5);
   makeShape(shapeE, 60, 0.1, 60, 0.4, 0.5);
@@ -203,25 +208,25 @@ function setup() {
   shapeOctave.element.addEventListener("pointerdown", octaveSetting);
 
   shapeC.element.addEventListener("pointerdown", () =>
-    playNote("C" + currentOctave, shapeC, 0.2, "noteC"),
+    playNote("C" + currentOctave, shapeC, 60, 0.2, 0.5, "noteC"),
   );
   shapeD.element.addEventListener("pointerdown", () =>
-    playNote("D" + currentOctave, shapeD, 0.3, "noteD"),
+    playNote("D" + currentOctave, shapeD, 60, 0.3, 0.5, "noteD"),
   );
   shapeE.element.addEventListener("pointerdown", () =>
-    playNote("E" + currentOctave, shapeE, 0.4, "noteE"),
+    playNote("E" + currentOctave, shapeE, 60, 0.4, 0.5, "noteE"),
   );
   shapeF.element.addEventListener("pointerdown", () =>
-    playNote("F" + currentOctave, shapeF, 0.5, "noteF"),
+    playNote("F" + currentOctave, shapeF, 60, 0.5, 0.5, "noteF"),
   );
   shapeG.element.addEventListener("pointerdown", () =>
-    playNote("G" + currentOctave, shapeG, 0.6, "noteG"),
+    playNote("G" + currentOctave, shapeG, 60, 0.6, 0.5, "noteG"),
   );
   shapeA.element.addEventListener("pointerdown", () =>
-    playNote("A" + currentOctave, shapeA, 0.7, "noteA"),
+    playNote("A" + currentOctave, shapeA, 60, 0.7, 0.5, "noteA"),
   );
   shapeB.element.addEventListener("pointerdown", () =>
-    playNote("B" + currentOctave, shapeB, 0.8, "noteB"),
+    playNote("B" + currentOctave, shapeB, 60, 0.8, 0.5, "noteB"),
   );
 
   window.addEventListener("pointermove", pointerMove);
