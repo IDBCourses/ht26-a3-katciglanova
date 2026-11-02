@@ -1,31 +1,9 @@
-/*
- * IDB Programming: A3 — a musical instrument
- *
- * All of the code for your instrument goes in this file. It's split into sections:
- *   settings — the "fixed" parts of your program
- *   state    — the parts of your program that change over time
- *   sound    — the Tone.js instruments and effects
- *   update   — updates the state every 100ms, if necessary
- *   use      — uses the state to make sound and shapes every 100ms, if necessary
- *   controls — what happens when the player uses the pointer
- *   setup    — starts everything
- *
- * The pointer events change the state. update() and use() each run every
- * 100ms, in a loop:
- *   1. update: change the state, e.g. based on time or on the pointer's movement
- *   2. use:    make sound and move shapes, based on the state
- *
- * Shapes come from shape.js: createShape() makes one, and its methods
- * (setPosition, setSize, setColour ...) change it.
- *
- * Tone.js documentation: https://tonejs.github.io/docs/15.1.22/
- */
-
 import { createShape } from "./shape.js";
 
 // ---------- Settings ----------
 // Settings variables should contain all of the "fixed" parts of your programs
-// For example: which notes you can play, how fast things move, the tempo.
+
+//creating all of the shapes
 const shapeC = createShape();
 const shapeD = createShape();
 const shapeE = createShape();
@@ -38,6 +16,7 @@ const shapeOctave = createShape();
 const shapeVibrato = createShape();
 const shapeDistortion = createShape();
 
+//objects containing all of the shapes and the info necessary for changing their state
 const listOfNoteShapes = {
   noteC: { shape: shapeC, size: 60, posX: 0.2, posY: 0.5 },
   noteD: { shape: shapeD, size: 60, posX: 0.3, posY: 0.5 },
@@ -54,25 +33,30 @@ const listOfEffectShapes = {
   distortion: { shape: shapeDistortion, originalColor: 150 },
 };
 
+//constants in ms that are used in the use function
 const noteDuration = 1200;
 const effectDuration = 200;
 
 // ---------- State ----------
 // State variables are the parts of your program that change over time.
 // For example: where the pointer is, how fast it's moving, or whether a drone is on.
+
+//variables used in the pointermove function
 let lastX = 0;
 let lastY = 0;
 let lastTime = 0;
-
-let currentOctave = 3;
-
 let speeds = [];
 
+let currentOctave = 3; //used in the octave function. the range of octaves is 3-5
+
+//empty objects used for changing the state of the shapes
 let activeShapes = {};
-let activeOctave = {};
+let activeOctave = {}; //only tracks the octave since the vibrato and distortion effects use pointerenter and pointerleave
+
 // ---------- Sound ----------
 // Make the instruments and plug them into the speakers.
 
+//a synth and two effects
 const distortionEffect = new Tone.Distortion({
   distortion: 0,
   wet: 0,
@@ -86,15 +70,15 @@ const vibratoEffect = new Tone.Vibrato({
 
 const synth = new Tone.PolySynth(Tone.Synth, { volume: 0 }).connect(
   vibratoEffect,
-); // can play several notes at once
+);
 
 // ---------- Update ----------
 // Update the state. This is called every 100ms.
-
 function update(currentShape, timeDiff) {
   let normTime = timeDiff / noteDuration;
-  let newSize = currentShape.size + 30 - normTime * 30;
+  let newSize = currentShape.size + 30 - normTime * 30; //making the shape deflate over time while the note is playing
 
+  //centering the shapes that change sizes so they dont move around
   let sizeNorm = newSize / window.innerWidth;
   let originalNorm = currentShape.size / window.innerWidth;
   let centerX = currentShape.posX + originalNorm / 2;
@@ -107,13 +91,12 @@ function update(currentShape, timeDiff) {
 
 // ---------- Use ----------
 // Use the state to make sound and move shapes. This is called every 100ms.
-
 function use() {
   const now = Date.now();
   for (let i in activeShapes) {
     let currentShape = activeShapes[i];
-    let shape = currentShape.shape;
-    const timeDiff = now - currentShape.pressTime;
+    let shape = currentShape.shape; //getting the shape property out of the object
+    const timeDiff = now - currentShape.pressTime; //measuring the duration of the note so that the animation is tied to the sound
 
     if (timeDiff < noteDuration) {
       let { newSize, newX, newY } = update(currentShape, timeDiff);
@@ -121,15 +104,16 @@ function use() {
       shape.setSize(newSize);
       shape.setPosition(newX, newY);
     } else {
+      //ensuring the shapes get back to their original state
       shape.setSize(currentShape.size);
       shape.setPosition(currentShape.posX, currentShape.posY);
-      delete activeShapes[i];
+      delete activeShapes[i]; //cleaning up the object so as to avoid clutter
     }
   }
   for (let j in activeOctave) {
     let currentEffectShape = activeOctave[j];
     let shape = currentEffectShape.shape;
-    const timeDiff = now - currentEffectShape.pressTime;
+    const timeDiff = now - currentEffectShape.pressTime; //making the color change only last 200 ms
     if (timeDiff < effectDuration) {
       shape.setColour(currentEffectShape.originalColor - 40, 80, 50);
     } else {
@@ -142,36 +126,8 @@ function use() {
 
 // ---------- Controls (Event Handlers) ----------
 // Runs every time the pointer goes down: a click, a tap or a pen touch.
-
-function octaveSetting(i) {
-  currentOctave = currentOctave + 1;
-  if (currentOctave > 5) {
-    currentOctave = 3;
-  }
-  let newActiveEffect = listOfEffectShapes["octave"];
-  activeOctave[i] = {
-    shape: newActiveEffect.shape,
-    originalColor: newActiveEffect.originalColor,
-    pressTime: Date.now(),
-  };
-}
-
-function playNote(note, i) {
-  Tone.start(); // browsers only allow sound after the player has pressed something
-  const now = Tone.now();
-  synth.triggerAttackRelease(note, "1n", now);
-
-  let newActiveShape = listOfNoteShapes[i];
-  activeShapes[i] = {
-    shape: newActiveShape.shape,
-    pressTime: Date.now(),
-    size: newActiveShape.size,
-    posX: newActiveShape.posX,
-    posY: newActiveShape.posY,
-  };
-}
-
 function pointerMove(event) {
+  //tracking how fast the pointer is moving on average
   let normX = event.clientX / window.innerWidth;
   let normY = event.clientY / window.innerHeight;
   let now = Date.now();
@@ -189,13 +145,58 @@ function pointerMove(event) {
     total = total + speeds[i];
   }
   let average = total / speeds.length;
-  let maxSpeed = 5;
-  let normSpeed = Math.min(1, Math.max(0, average / maxSpeed));
+  let maxSpeed = 5; //making the volume loudest when the average speed is five
+  let normSpeed = Math.min(1, Math.max(0, average / maxSpeed)); //normalizing the speed between 0 and 1 so that its easier to map onto the volume
   let volume = normSpeed * 20 - 20;
   synth.volume.rampTo(volume, 0.05);
+
+  //saving the coordinates and timing for comparison with new data
   lastX = normX;
   lastY = normY;
   lastTime = now;
+}
+
+function playNote(note, i) {
+  Tone.start();
+  const now = Tone.now();
+  synth.triggerAttackRelease(note, "1n", now);
+
+  let newActiveShape = listOfNoteShapes[i]; //adding the object data to a new object that is used in the update and use functions
+  activeShapes[i] = {
+    shape: newActiveShape.shape,
+    pressTime: Date.now(),
+    size: newActiveShape.size,
+    posX: newActiveShape.posX,
+    posY: newActiveShape.posY,
+  };
+}
+
+function octaveSetting(i) {
+  currentOctave = currentOctave + 1;
+  if (currentOctave > 5) {
+    currentOctave = 3;
+  }
+  let newActiveEffect = listOfEffectShapes["octave"];
+  activeOctave[i] = {
+    shape: newActiveEffect.shape,
+    originalColor: newActiveEffect.originalColor,
+    pressTime: Date.now(),
+  };
+}
+
+function vibratoOn() {
+  vibratoEffect.frequency.value = 5;
+  vibratoEffect.depth.value = 0.3;
+  vibratoEffect.wet.rampTo(1, 0.05);
+
+  let effect = listOfEffectShapes["vibrato"];
+  effect.shape.setColour(effect.originalColor - 40, 90, 60); //changing the color directly in the function
+}
+
+function vibratoOff() {
+  vibratoEffect.wet.rampTo(0, 0.05);
+  let effect = listOfEffectShapes["vibrato"];
+  effect.shape.setColour(effect.originalColor, 80, 50);
 }
 
 function distortionOn() {
@@ -211,21 +212,7 @@ function distortionOff() {
   effect.shape.setColour(effect.originalColor, 80, 50);
 }
 
-function vibratoOn() {
-  vibratoEffect.frequency.value = 5;
-  vibratoEffect.depth.value = 0.3;
-  vibratoEffect.wet.rampTo(1, 0.05);
-
-  let effect = listOfEffectShapes["vibrato"];
-  effect.shape.setColour(effect.originalColor - 40, 90, 60);
-}
-
-function vibratoOff() {
-  vibratoEffect.wet.rampTo(0, 0.05);
-  let effect = listOfEffectShapes["vibrato"];
-  effect.shape.setColour(effect.originalColor, 80, 50);
-}
-
+//a function for making shapes to debulk the setup function
 function makeShape(shape, size, roundedness, hue, posX, posY) {
   shape.setSize(size);
   shape.setRoundedness(roundedness);
@@ -236,9 +223,9 @@ function makeShape(shape, size, roundedness, hue, posX, posY) {
 // ---------- Setup ----------
 // Setup is run once, at the start of the program. It sets everything up for us!
 function setup() {
-  // start the update loop
   use(); // start the use loop
 
+  //formatting the shapes
   makeShape(shapeC, 60, 0.1, 0, 0.2, 0.5);
   makeShape(shapeD, 60, 0.1, 20, 0.3, 0.5);
   makeShape(shapeE, 60, 0.1, 60, 0.4, 0.5);
@@ -251,7 +238,7 @@ function setup() {
   makeShape(shapeVibrato, 60, 1, 200, 0.4, 0.7);
   makeShape(shapeDistortion, 60, 1, 150, 0.6, 0.7);
 
-  // Put your event listener code here
+  //all functions are called with different event listeners
   shapeOctave.element.addEventListener("pointerdown", () =>
     octaveSetting("octave"),
   );
@@ -286,4 +273,4 @@ function setup() {
   shapeVibrato.element.addEventListener("pointerleave", vibratoOff);
 }
 
-setup(); // Always remember to call setup()!
+setup();
