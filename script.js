@@ -34,7 +34,11 @@ const shapeG = createShape();
 const shapeA = createShape();
 const shapeB = createShape();
 
-const listOfShapes = {
+const shapeOctave = createShape();
+const shapeVibrato = createShape();
+const shapeDistortion = createShape();
+
+const listOfNoteShapes = {
   noteC: { shape: shapeC, size: 60, posX: 0.2, posY: 0.5 },
   noteD: { shape: shapeD, size: 60, posX: 0.3, posY: 0.5 },
   noteE: { shape: shapeE, size: 60, posX: 0.4, posY: 0.5 },
@@ -44,11 +48,14 @@ const listOfShapes = {
   noteB: { shape: shapeB, size: 60, posX: 0.8, posY: 0.5 },
 };
 
-const shapeOctave = createShape();
-const shapeVibrato = createShape();
-const shapeDistortion = createShape();
+const listOfEffectShapes = {
+  octave: { shape: shapeOctave, originalColor: 320 },
+  vibrato: { shape: shapeVibrato, originalColor: 200 },
+  distortion: { shape: shapeDistortion, originalColor: 150 },
+};
 
 const noteDuration = 1200;
+const effectDuration = 200;
 
 // ---------- State ----------
 // State variables are the parts of your program that change over time.
@@ -62,6 +69,7 @@ let currentOctave = 3;
 let speeds = [];
 
 let activeShapes = {};
+let activeOctave = {};
 // ---------- Sound ----------
 // Make the instruments and plug them into the speakers.
 
@@ -118,17 +126,34 @@ function use() {
       delete activeShapes[i];
     }
   }
+  for (let j in activeOctave) {
+    let currentEffectShape = activeOctave[j];
+    let shape = currentEffectShape.shape;
+    const timeDiff = now - currentEffectShape.pressTime;
+    if (timeDiff < effectDuration) {
+      shape.setColour(currentEffectShape.originalColor - 40, 80, 50);
+    } else {
+      shape.setColour(currentEffectShape.originalColor, 80, 50);
+      delete activeOctave[j];
+    }
+  }
   setTimeout(use, 100); // call use() again in 100 milliseconds
 }
 
 // ---------- Controls (Event Handlers) ----------
 // Runs every time the pointer goes down: a click, a tap or a pen touch.
 
-function octaveSetting() {
+function octaveSetting(i) {
   currentOctave = currentOctave + 1;
   if (currentOctave > 5) {
     currentOctave = 3;
   }
+  let newActiveEffect = listOfEffectShapes["octave"];
+  activeOctave[i] = {
+    shape: newActiveEffect.shape,
+    originalColor: newActiveEffect.originalColor,
+    pressTime: Date.now(),
+  };
 }
 
 function playNote(note, i) {
@@ -136,7 +161,7 @@ function playNote(note, i) {
   const now = Tone.now();
   synth.triggerAttackRelease(note, "1n", now);
 
-  let newActiveShape = listOfShapes[i];
+  let newActiveShape = listOfNoteShapes[i];
   activeShapes[i] = {
     shape: newActiveShape.shape,
     pressTime: Date.now(),
@@ -176,20 +201,29 @@ function pointerMove(event) {
 function distortionOn() {
   distortionEffect.distortion = 0.2;
   distortionEffect.wet.rampTo(1, 0.05);
+  let effect = listOfEffectShapes["distortion"];
+  effect.shape.setColour(effect.originalColor - 40, 90, 60);
 }
 
 function distortionOff() {
   distortionEffect.wet.rampTo(0, 0.05);
+  let effect = listOfEffectShapes["distortion"];
+  effect.shape.setColour(effect.originalColor, 80, 50);
 }
 
 function vibratoOn() {
   vibratoEffect.frequency.value = 5;
   vibratoEffect.depth.value = 0.3;
   vibratoEffect.wet.rampTo(1, 0.05);
+
+  let effect = listOfEffectShapes["vibrato"];
+  effect.shape.setColour(effect.originalColor - 40, 90, 60);
 }
 
 function vibratoOff() {
   vibratoEffect.wet.rampTo(0, 0.05);
+  let effect = listOfEffectShapes["vibrato"];
+  effect.shape.setColour(effect.originalColor, 80, 50);
 }
 
 function makeShape(shape, size, roundedness, hue, posX, posY) {
@@ -218,7 +252,9 @@ function setup() {
   makeShape(shapeDistortion, 60, 1, 150, 0.6, 0.7);
 
   // Put your event listener code here
-  shapeOctave.element.addEventListener("pointerdown", octaveSetting);
+  shapeOctave.element.addEventListener("pointerdown", () =>
+    octaveSetting("octave"),
+  );
 
   shapeC.element.addEventListener("pointerdown", () =>
     playNote("C" + currentOctave, "noteC"),
@@ -243,6 +279,7 @@ function setup() {
   );
 
   window.addEventListener("pointermove", pointerMove);
+
   shapeDistortion.element.addEventListener("pointerenter", distortionOn);
   shapeDistortion.element.addEventListener("pointerleave", distortionOff);
   shapeVibrato.element.addEventListener("pointerenter", vibratoOn);
