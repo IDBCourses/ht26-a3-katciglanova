@@ -48,6 +48,8 @@ const shapeOctave = createShape();
 const shapeVibrato = createShape();
 const shapeDistortion = createShape();
 
+const noteDuration = 1200;
+
 // ---------- State ----------
 // State variables are the parts of your program that change over time.
 // For example: where the pointer is, how fast it's moving, or whether a drone is on.
@@ -58,6 +60,8 @@ let lastTime = 0;
 let currentOctave = 3;
 
 let speeds = [];
+
+let activeShapes = {};
 // ---------- Sound ----------
 // Make the instruments and plug them into the speakers.
 
@@ -76,24 +80,25 @@ const synth = new Tone.PolySynth(Tone.Synth, { volume: 0 }).connect(
   vibratoEffect,
 ); // can play several notes at once
 
-function makeShape(shape, size, roundedness, hue, posX, posY) {
-  shape.setSize(size);
-  shape.setRoundedness(roundedness);
-  shape.setColour(hue, 80, 50);
-  shape.setPosition(posX, posY);
-}
-
 // ---------- Update ----------
 // Update the state. This is called every 100ms.
 
-function update() {
-  setTimeout(update, 100); // call update() again in 100 milliseconds
+function update(currentShape, timeDiff) {
+  let normTime = timeDiff / noteDuration;
+  let newSize = currentShape.size + 30 - normTime * 30;
+
+  let sizeNorm = newSize / window.innerWidth;
+  let originalNorm = currentShape.size / window.innerWidth;
+  let centerX = currentShape.posX + originalNorm / 2;
+  let centerY = currentShape.posY + originalNorm / 2;
+  let newX = centerX - sizeNorm / 2;
+  let newY = centerY - sizeNorm / 2;
+
+  return { newSize, newX, newY };
 }
 
 // ---------- Use ----------
 // Use the state to make sound and move shapes. This is called every 100ms.
-let activeShapes = {};
-const noteDuration = 1200;
 
 function use() {
   const now = Date.now();
@@ -103,7 +108,10 @@ function use() {
     const timeDiff = now - currentShape.pressTime;
 
     if (timeDiff < noteDuration) {
-      calculatePosition(shape, currentShape, timeDiff);
+      let { newSize, newX, newY } = update(currentShape, timeDiff);
+
+      shape.setSize(newSize);
+      shape.setPosition(newX, newY);
     } else {
       shape.setSize(currentShape.size);
       shape.setPosition(currentShape.posX, currentShape.posY);
@@ -111,21 +119,6 @@ function use() {
     }
   }
   setTimeout(use, 100); // call use() again in 100 milliseconds
-}
-
-function calculatePosition(shape, currentShape, timeDiff) {
-  let normTime = timeDiff / noteDuration;
-  let currentSize = currentShape.size + 30 - normTime * 30;
-  shape.setSize(currentSize);
-
-  let sizeNorm = currentSize / window.innerWidth;
-  let originalNorm = currentShape.size / window.innerWidth;
-  let centerX = currentShape.posX + originalNorm / 2;
-  let centerY = currentShape.posY + originalNorm / 2;
-  let newX = centerX - sizeNorm / 2;
-  let newY = centerY - sizeNorm / 2;
-
-  shape.setPosition(newX, newY);
 }
 
 // ---------- Controls (Event Handlers) ----------
@@ -198,10 +191,18 @@ function vibratoOn() {
 function vibratoOff() {
   vibratoEffect.wet.rampTo(0, 0.05);
 }
+
+function makeShape(shape, size, roundedness, hue, posX, posY) {
+  shape.setSize(size);
+  shape.setRoundedness(roundedness);
+  shape.setColour(hue, 80, 50);
+  shape.setPosition(posX, posY);
+}
+
 // ---------- Setup ----------
 // Setup is run once, at the start of the program. It sets everything up for us!
 function setup() {
-  update(); // start the update loop
+  // start the update loop
   use(); // start the use loop
 
   makeShape(shapeC, 60, 0.1, 0, 0.2, 0.5);
