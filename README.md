@@ -4,11 +4,10 @@
 
 **Name:** Katarína Ciglanová ar5929
 
-<!-- This instrument consists of seven buttons that play the notes on a scale, one button that changes the octave the notes are in and two kinds of effects that change the sound. -->
+This instrument consists of seven buttons that play the notes on a scale, one button that changes the octave the notes are in and two kinds of effects that change the sound.
 
 ## How to play
 
-<!-- Fill in the table with a row for everything the player can do with the pointer: clicking, moving slowly or fast, moving in circles, holding still... Say what happens to the sound and to the shapes. If you added keys, give them rows too. -->
 
 | When you...                              | The sound...                              | The shapes...                |
 | ---------------------------------------- | ----------------------------------------- | ---------------------------- |
