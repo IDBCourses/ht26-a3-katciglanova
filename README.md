@@ -1,19 +1,21 @@
 # My instrument
 
-**Play it here:** <!-- Paste your GitHub Pages link here, e.g. https://idbcourses.github.io/your-repo-name/ -->
+**Play it here:** https://idbcourses.github.io/ht26-a3-katciglanova/
 
-**Name:** <!-- Your name and MAU ID -->
+**Name:** Katarína Ciglanová ar5929
 
-<!-- One or two sentences: what kind of instrument is it, and what is it like to play? -->
+<!-- This instrument consists of seven buttons that play the notes on a scale, one button that changes the octave the notes are in and two kinds of effects that change the sound. -->
 
 ## How to play
 
 <!-- Fill in the table with a row for everything the player can do with the pointer: clicking, moving slowly or fast, moving in circles, holding still... Say what happens to the sound and to the shapes. If you added keys, give them rows too. -->
 
-| When you...  | The sound...                         | The shapes... |
-| ------------ | ------------------------------------ | ------------- |
-| Click or tap | Plays a C4 (the example: replace it) | Nothing yet   |
-|              |                                      |               |
+| When you...                              | The sound...                              | The shapes...                |
+| ---------------------------------------- | ----------------------------------------- | ---------------------------- |
+| Click a rainbow button                   | Plays a note from C to B                  | grow big and then deflate    |
+| Click the pink button                    | Changes the octave of the following notes | flashes to a different color |
+| Enter and leave the blue and cyan shapes | Adds an effect to the notes playing       | changes color while active   |
+| Move the pointer at different speeds     | Affects the volume of the sound           |                              |
 
 <!-- Anything else a player needs to know: how to get started, a good thing to try first. -->
 
